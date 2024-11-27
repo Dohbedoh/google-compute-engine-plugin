@@ -28,7 +28,6 @@ import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Item;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -57,97 +56,79 @@ import org.kohsuke.stapler.QueryParameter;
 @ToString
 @EqualsAndHashCode
 public class WindowsConfiguration implements Describable<WindowsConfiguration>, Serializable {
-  private static final long serialVersionUID = 1L;
-  private String passwordCredentialsId;
-  private String privateKeyCredentialsId;
+    private static final long serialVersionUID = 1L;
+    private String passwordCredentialsId;
+    private String privateKeyCredentialsId;
 
-  @DataBoundConstructor
-  public WindowsConfiguration() {}
+    @DataBoundConstructor
+    public WindowsConfiguration() {}
 
-  /**
-   * Gets the password if a username and password credential is provided
-   *
-   * @return password in plain text to use for SSH
-   */
-  public String getPassword() {
-    if (passwordCredentialsId.isEmpty()) {
-      return null;
-    }
-    StandardUsernamePasswordCredentials cred =
-        CredentialsMatchers.firstOrNull(
-            CredentialsProvider.lookupCredentials(
-                StandardUsernamePasswordCredentials.class,
-                Jenkins.get(),
-                ACL.SYSTEM,
-                new ArrayList<>()),
-            CredentialsMatchers.withId(passwordCredentialsId));
-    if (cred == null) {
-      return null;
-    }
-    return cred.getPassword().getPlainText();
-  }
-
-  /**
-   * Returns the SSH private key if a SSH credential is provided
-   *
-   * @return SSH private key in plain text to use for SSH
-   */
-  public StandardUsernameCredentials getPrivateKeyCredentials() {
-    if (Strings.isNullOrEmpty(privateKeyCredentialsId)) {
-      return null;
-    }
-    return CredentialsMatchers.firstOrNull(
-        new SystemCredentialsProvider.ProviderImpl()
-            .getCredentials(SSHUserPrivateKey.class, Jenkins.get(), ACL.SYSTEM),
-        CredentialsMatchers.withId(privateKeyCredentialsId));
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public Descriptor<WindowsConfiguration> getDescriptor() {
-    return Jenkins.get().getDescriptor(WindowsConfiguration.class);
-  }
-
-  @Extension
-  public static final class DescriptorImpl extends Descriptor<WindowsConfiguration> {
-    public ListBoxModel doFillPasswordCredentialsIdItems(@AncestorInPath Jenkins context) {
-      checkPermissions();
-      if (context == null || !context.hasPermission(Item.CONFIGURE)) {
-        return new StandardListBoxModel();
-      }
-      return new StandardListBoxModel()
-          .includeEmptyValue()
-          .includeMatchingAs(
-              ACL.SYSTEM,
-              context,
-              StandardUsernamePasswordCredentials.class,
-              new ArrayList<>(),
-              CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials.class));
+    /**
+     * Gets the password if a username and password credential is provided
+     *
+     * @return password in plain text to use for SSH
+     */
+    public String getPassword() {
+        if (passwordCredentialsId.isEmpty()) {
+            return null;
+        }
+        StandardUsernamePasswordCredentials cred = CredentialsMatchers.firstOrNull(
+                CredentialsProvider.lookupCredentials(
+                        StandardUsernamePasswordCredentials.class, Jenkins.get(), ACL.SYSTEM, new ArrayList<>()),
+                CredentialsMatchers.withId(passwordCredentialsId));
+        if (cred == null) {
+            return null;
+        }
+        return cred.getPassword().getPlainText();
     }
 
-    public ListBoxModel doFillPrivateKeyCredentialsIdItems(@AncestorInPath Jenkins context) {
-      checkPermissions();
-      if (context == null || !context.hasPermission(Item.CONFIGURE)) {
-        return new StandardUsernameListBoxModel();
-      }
-      return new StandardUsernameListBoxModel()
-          .includeEmptyValue()
-          .includeMatchingAs(
-              ACL.SYSTEM,
-              context,
-              SSHUserPrivateKey.class,
-              new ArrayList<>(),
-              CredentialsMatchers.instanceOf(SSHUserPrivateKey.class));
+    /**
+     * Returns the SSH private key if a SSH credential is provided
+     *
+     * @return SSH private key in plain text to use for SSH
+     */
+    public StandardUsernameCredentials getPrivateKeyCredentials() {
+        if (Strings.isNullOrEmpty(privateKeyCredentialsId)) {
+            return null;
+        }
+        return CredentialsMatchers.firstOrNull(
+            new SystemCredentialsProvider.ProviderImpl()
+                .getCredentials(SSHUserPrivateKey.class, Jenkins.get(), ACL.SYSTEM),
+            CredentialsMatchers.withId(privateKeyCredentialsId));
     }
 
-    public FormValidation doCheckPrivateKeyCredentialsId(
-        @QueryParameter String value,
-        @QueryParameter("passwordCredentialsId") String passwordCredentialsId) {
-      checkPermissions();
-      if (Strings.isNullOrEmpty(value) && Strings.isNullOrEmpty(passwordCredentialsId)) {
-        return FormValidation.error("A password or private key credential is required");
-      }
-      return FormValidation.ok();
+    @Extension
+    public static final class DescriptorImpl extends Descriptor<WindowsConfiguration> {
+        public ListBoxModel doFillPasswordCredentialsIdItems(@AncestorInPath Jenkins context) {
+            checkPermissions(context, Jenkins.ADMINISTER);
+            return new StandardListBoxModel()
+                    .includeEmptyValue()
+                    .includeMatchingAs(
+                            ACL.SYSTEM,
+                            context,
+                            StandardUsernamePasswordCredentials.class,
+                            new ArrayList<>(),
+                            CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials.class));
+        }
+
+        public ListBoxModel doFillPrivateKeyCredentialsIdItems(@AncestorInPath Jenkins context) {
+            checkPermissions(context, Jenkins.ADMINISTER);
+            return new StandardUsernameListBoxModel()
+                    .includeEmptyValue()
+                    .includeMatchingAs(
+                            ACL.SYSTEM,
+                            context,
+                            SSHUserPrivateKey.class,
+                            new ArrayList<>(),
+                            CredentialsMatchers.instanceOf(SSHUserPrivateKey.class));
+        }
+
+        public FormValidation doCheckPrivateKeyCredentialsId(
+                @QueryParameter String value, @QueryParameter("passwordCredentialsId") String passwordCredentialsId) {
+            if (Strings.isNullOrEmpty(value) && Strings.isNullOrEmpty(passwordCredentialsId)) {
+                return FormValidation.error("A password or private key credential is required");
+            }
+            return FormValidation.ok();
+        }
     }
-  }
 }

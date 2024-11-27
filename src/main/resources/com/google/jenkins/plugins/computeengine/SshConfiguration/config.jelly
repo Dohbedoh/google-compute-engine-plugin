@@ -11,7 +11,9 @@
  implied. See the License for the specific language governing permissions and limitations under the
  License.
 -->
-<div>
-    Dictates whether the instance should receive an <strong>external routable IP</strong> address. In GCE, you will need to have either an <em>external IP</em> or a <a href="https://cloud.google.com/vpc/docs/special-configurations#multiple-natgateways">NAT gateway</a> setup in order to download anything from the internet.
-</div>
-
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+  <f:entry field="customPrivateKeyCredentialsId" title="${%Custom SSH Private Key Credentials}">
+    <c:select/>
+  </f:entry>
+</j:jelly>

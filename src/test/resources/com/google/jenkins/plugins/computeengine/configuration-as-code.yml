@@ -32,7 +32,9 @@ jenkins:
                 region:         europe-west1
                 subnetworkShortName: gce-jenkins-cloud
             networkTags:        jenkins-agent
-            externalAddress:    true
+            networkInterfaceIpStackMode:
+              singleStack:
+                externalIPV4Address:    true
             useInternalAddress: false
             bootDiskSourceImageProject: gce-jenkins
             bootDiskSourceImageName: "https://www.googleapis.com/compute/v1/projects/gce-jenkins/global/images/gce-jenkins-build-image"
@@ -40,3 +42,14 @@ jenkins:
             bootDiskSizeGbStr:  50
             bootDiskAutoDelete: true
             serviceAccountEmail: 'jenkins-test@gce-jenkins-ops.iam.gserviceaccount.com'
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - googleRobotPrivateKeyCredentials:
+              id: gce-jenkins
+              projectId: gce-jenkins
+              serviceAccountConfig:
+                jsonServiceAccountConfig:
+                  # The encoded version of {"client_email": "example@example.com"}
+                  secretJsonKey: 'eyJjbGllbnRfZW1haWwiOiAiZXhhbXBsZUBleGFtcGxlLmNvbSJ9'

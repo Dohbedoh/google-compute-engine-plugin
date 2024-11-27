@@ -57,7 +57,7 @@ View Google Compute Engine on the plugin site for more information.
 ### Google Compute Engine configuration
 Each GCE configuration can point to a different GCP project. Follow the steps below to create one.
 
- 1. Go to Manage Jenkins, then Configure System
+ 1. Go to Manage Jenkins, then Nodes and Clouds, then CLouds in the left menu 
  2. At the bottom of the page there will be a button labeled Add a new cloud, click the 
     button then click Google Compute Engine.
  3. Enter a name for your cloud configuration and the Project ID that you will be using
@@ -76,12 +76,20 @@ An instance configuration allows you to map an instance to a set of labels that 
 3. Set a Description that identifies what this instance configuration will be used for.
 4. Optionally, set a label in the Label field that will allow you to restrict jobs to  
    only run on this type of node.
-5. Select a Region and Zone to define where instances will be launched.
-6. Select the Machine Type for this instance configuration which defines the number of 
+5. Optionally, select the Custom SSH Private Key option to authenticate with a custom
+   SSH key pair. Choose a SSH private key from the Jenkins Credentials or add a new
+   SSH private key and use that new key. Private keys must follow OpenSSH PEM format.
+6. Select a Region and Zone to define where instances will be launched.
+7. Select the Machine Type for this instance configuration which defines the number of 
    cores and RAM that will be allocated.
-7. Select the Network and Subnetwork that the instance will be deployed into.
-8. For the Boot Disk configuration choose an image that has Java 8 installed and on its 
+8. Select the Network and Subnetwork that the instance will be deployed into.
+9. For the Boot Disk configuration choose an image that has Java 8 installed and on its 
     default path.
+    
+#### Custom SSH Private Key Use
+In order to properly authenticate a new node using a custom SSH private key, the new
+node must have the public key (corresponding to the selected private key) in the
+authorized_keys file of the user selected in that instance configuration.
 
 Once complete you should be able to create jobs that restrict their builds to the label
  you selected. Instances will provision on demand. When no builds have been run for the
@@ -126,6 +134,5 @@ If you want to turn off this Strategy globally then you can set a SystemProperty
 
 Follow the steps below to configure it:
 
- 1. Go to Manage Jenkins, then Configure System
- 2. At the bottom of the page there will be a Cloud Section
- 3. Select the cloud project and look for the `No delay provisioning` checkbox, and click on to enable it. 
+ 1. Go to Manage Jenkins, then Nodes and Clouds, then CLouds in the left menu
+ 2. Select the cloud project and look for the `No delay provisioning` checkbox, and click on to enable it. 
